@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minecraft.net – A Fun Little Clone</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ====== Global Reset ====== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            color: #f5f5f5;
+            background: #0b0f1a;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ====== Animated Background ====== */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(135deg, #0b0f1a 0%, #0f2610 40%, #1a3a1a 70%, #0b0f1a 100%);
+            z-index: -3;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255,255,255,0.08) 0, transparent 40%),
+                radial-gradient(circle at 80% 0%, rgba(0,255,128,0.15) 0, transparent 45%),
+                radial-gradient(circle at 0% 100%, rgba(0,200,255,0.18) 0, transparent 40%);
+            mix-blend-mode: screen;
+            opacity: 0.7;
+            animation: glow 18s infinite alternate;
+            z-index: -2;
+        }
+
+        @keyframes glow {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.6; }
+            100% { transform: scale(1.1) translate(-10px, 10px); opacity: 0.9; }
+        }
+
+        /* ====== Layout ====== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* ====== Navbar ====== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-block {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(145deg, #3b7a3b, #1f4f1f);
+            border-radius: 4px;
+            box-shadow: 0 0 0 2px #111, 0 4px 10px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .logo-block::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border-radius: 3px;
+            background-image:
+                linear-gradient(90deg, rgba(0,0,0,0.3) 0, transparent 40%, rgba(255,255,255,0.2) 100%);
+            opacity: 0.7;
+        }
+
+        .logo-text {
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 1rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: #e0ffe0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(160, 255, 160, 0.3);
+            background: rgba(10, 20, 10, 0.7);
+            backdrop-filter: blur(6px);
+            transition: all 0.2s ease-out;
+        }
+
+        .nav-link:hover {
+            background: rgba(40, 80, 40, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 0 12px rgba(0,255,128,0.4);
+        }
+
+        /* ====== Hero Section ====== */
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.8fr);
+            gap: 32px;
+            align-items: center;
+            padding: 32px 0 40px;
+        }
+
+        @media (max-width: 800px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hero-title {
+            font-size: clamp(2.4rem, 4vw, 3.2rem);
+            font-weight: 900;
+            line-height: 1.1;
+            text-shadow: 0 0 18px rgba(0,0,0,0.9);
+        }
+
+        .hero-title span.highlight {
+            color: #9bff7a;
+            text-shadow: 0 0 18px rgba(155,255,122,0.8);
+        }
+
+        .hero-subtitle {
+            margin-top: 14px;
+            font-size: 1rem;
+            max-width: 520px;
+            color: #cfe9cf;
+        }
+
+        .hero-subtitle strong {
+            color: #9bff7a;
+        }
+
+        .hero-actions {
+            margin-top: 22px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.18s ease-out;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b7a3b, #9bff7a);
+            color: #041004;
+            box-shadow: 0 0 0 2px #041004, 0 10px 24px rgba(0,0,0,0.7);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 0 2px #041004, 0 14px 32px rgba(0,0,0,0.9);
+            filter: brightness(1.05);
+        }
+
+        .btn-secondary {
+            background: rgba(10, 20, 10, 0.8);
+            color: #e0ffe0;
+            border: 1px solid rgba(160, 255, 160, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(40, 80, 40, 0.95);
+            box-shadow: 0 0 12px rgba(0,255,128,0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            background: #041004;
+            position: relative;
+        }
+
+        .btn-icon::before,
+        .btn-icon::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border-radius: 2px;
+            background: linear-gradient(135deg, #3b7a3b, #9bff7a);
+        }
+
+        .btn-icon::after {
+            inset: 6px;
+            opacity: 0.6;
+        }
+
+        /* ====== Hero Card (Fake World Preview) ====== */
+        .hero-card {
+            position: relative;
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(5, 10, 5, 0.9);
+            border: 1px solid rgba(160, 255, 160, 0.25);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-card-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9bff7a;
+            margin-bottom: 10px;
+        }
+
+        .hero-card-preview {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #1a3a1a 0%, #0b0f1a 55%, #0b0f1a 100%);
+            height: 220px;
+        }
+
+        .block-row {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            padding-bottom: 12px;
+        }
+
+        .block {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            background: linear-gradient(145deg, #3b7a3b, #1f4f1f);
+            box-shadow: 0 4px 0 #041004;
+            position: relative;
+        }
+
+        .block::before {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border-radius: 3px;
+            background-image:
+                linear-gradient(90deg, rgba(0,0,0,0.3) 0, transparent 40%, rgba(255,255,255,0.2) 100%);
+            opacity: 0.7;
+        }
+
+        .block.block-ore {
+            background: linear-gradient(145deg, #3b7a3b, #1f4f1f);
+        }
+
+        .block.block-ore::after {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 2px;
+            background:
+                radial-gradient(circle at 20% 30%, #00e5ff 0, transparent 40%),
+                radial-gradient(circle at 70% 60%, #00ff88 0, transparent 40%);
+            opacity: 0.9;
+        }
+
+        .sky-stars {
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8) 0, transparent 40%),
+                radial-gradient(circle at 80% 10%, rgba(255,255,255,0.7) 0, transparent 40%),
+                radial-gradient(circle at 40% 40%, rgba(255,255,255,0.6) 0, transparent 40%);
+            mix-blend-mode: screen;
+            opacity: 0.6;
+            animation: twinkle 4s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.4; transform: scale(1); }
+            100% { opacity: 0.9; transform: scale(1.02); }
+        }
+
+        .hero-card-footer {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #cfe9cf;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(160, 255, 160, 0.4);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        /* ====== Sections ====== */
+        section {
+            margin-top: 40px;
+            padding: 24px 20px;
+            border-radius: 18px;
+            background: rgba(5, 10, 5, 0.9);
+            border: 1px solid rgba(160, 255, 160, 0.25);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        section h2 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9bff7a;
+        }
+
+        section p {
+            font-size: 0.95rem;
+            color: #cfe9cf;
+            line-height: 1.6;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 800px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ====== Download Cards ====== */
+        .download-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .download-card {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(10, 20, 10, 0.9);
+            border: 1px solid rgba(160, 255, 160, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .download-card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .download-card-meta {
+            font-size: 0.8rem;
+            color: #a8cfa8;
+        }
+
+        .download-card-footer {
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-card-footer .btn {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+        }
+
+        /* ====== Footer ====== */
+        footer {
+            margin-top: 32px;
+            padding: 18px 0 8px;
+            font-size: 0.8rem;
+            color: #a8cfa8;
+            text-align: center;
+        }
+
+        footer a {
+            color: #9bff7a;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ====== NAVBAR ====== -->
+        <header>
+            <div class="logo">
+                <div class="logo-block"></div>
+                <div class="logo-text">Minecraft.net</div>
+            </div>
+            <nav>
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#download" class="nav-link">Download</a>
+            </nav>
+        </header>
+
+        <!-- ====== HERO / HOME ====== -->
+        <main id="home">
+            <section class="hero">
+                <div>
+                    <h1 class="hero-title">
+                        A tiny <span class="highlight">Minecraft‑style</span> clone.<br>
+                        Built just for fun.
+                    </h1>
+                    <p class="hero-subtitle">
+                        <strong>Minecraft.net</strong> (not the official one!) is a small side‑project:
+                        a blocky sandbox inspired by the game we all know, built just for fun,
+                        experiments, and vibes. No microtransactions. No pressure. Just blocks.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#download" class="btn btn-primary">
+                            <span class="btn-icon"></span>
+                            <span>Download Game</span>
+                        </a>
+                        <a href="#about" class="btn btn-secondary">
+                            <span>What is this?</span>
+                        </a>
+                    </div>
+                </div>
+
+                <aside class="hero-card">
+                    <div class="hero-card-title">World Preview (Concept)</div>
+                    <div class="hero-card-preview">
+                        <div class="sky-stars"></div>
+                        <div class="block-row">
+                            <div class="block"></div>
+                            <div class="block block-ore"></div>
+                            <div class="block"></div>
+                            <div class="block block-ore"></div>
+                            <div class="block"></div>
+                        </div>
+                    </div>
+                    <div class="hero-card-footer">
+                        <span class="pill">Sideproject • Indie • Just for fun</span>
+                        <span>Made with ❤️ and a lot of blocks.</span>
+                    </div>
+                </aside>
+            </section>
+
+            <!-- ====== ABOUT SECTION ====== -->
+            <section id="about">
+                <div class="section-grid">
+                    <div>
+                        <h2>About Minecraft.net</h2>
+                        <p>
+                            This is <strong>not</strong> the official Minecraft website.  
+                            It’s a <strong>tiny Minecraft‑style clone</strong> I’m building as a
+                            fun little sideproject—something to experiment with game mechanics,
+                            rendering tricks, and blocky worlds without worrying about perfection.
+                        </p>
+                        <p style="margin-top: 10px;">
+                            The goal isn’t to compete with the real game.  
+                            It’s to learn, play, and ship something cool:
+                            a sandbox where you can place blocks, explore a small world,
+                            and maybe break things in the process (in a good way).
+                        </p>
+                        <p style="margin-top: 10px;">
+                            Expect bugs. Expect weird physics.  
+                            Expect features to appear and disappear as ideas evolve.  
+                            If you enjoy experimental projects and indie vibes, you’re in the right place.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Project Vibes</h2>
+                        <p>
+                            • Blocky worlds, simple controls  
+                            • Lightweight build you can run quickly  
+                            • A playground for new ideas, not a polished AAA release  
+                            • Perfect for people who love tinkering and seeing how games are made
+                        </p>
+                        <p style="margin-top: 10px;">
+                            Want to peek under the hood?  
+                            The project is hosted on GitHub, so you can explore the code,
+                            fork it, or even contribute your own experiments.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== DOWNLOAD SECTION ====== -->
+            <section id="download">
+                <h2>Download Minecraft.net (Sideproject Build)</h2>
+                <p>
+                    Below are download options for the current build.  
+                    Replace the placeholder links with your actual <strong>raw GitHub file URLs</strong>
+                    so people can grab the game directly.
+                </p>
+
+                <div class="download-list">
+                    <!-- Desktop Build -->
+                    <div class="download-card">
+                        <div class="download-card-title">Desktop Build (Windows)</div>
+                        <div class="download-card-meta">
+                            Recommended for most players.  
+                            Standalone executable, no installer required.
+                        </div>
+                        <div class="download-card-footer">
+                            <a
+                                class="btn btn-primary"
+                                href="https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/path/to/windows-build.exe"
+                                download
+                            >
+                                <span class="btn-icon"></span>
+                                <span>Download .exe</span>
+                            </a>
+                            <span class="pill">Experimental</span>
+                        </div>
+                    </div>
+
+                    <!-- Zip Build -->
+                    <div class="download-card">
+                        <div class="download-card-title">Portable ZIP Build</div>
+                        <div class="download-card-meta">
+                            Unzip and run.  
+                            Good for testing on different machines or keeping it on a USB drive.
+                        </div>
+                        <div class="download-card-footer">
+                            <a
+                                class="btn btn-secondary"
+                                href="https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/path/to/portable-build.zip"
+                                download
+                            >
+                                <span>Download .zip</span>
+                            </a>
+                            <span class="pill">No installer</span>
+                        </div>
+                    </div>
+
+                    <!-- Source Code -->
+                    <div class="download-card">
+                        <div class="download-card-title">Source Code (GitHub)</div>
+                        <div class="download-card-meta">
+                            Want to see how it works?  
+                            Clone, tweak, and break things to learn.
+                        </div>
+                        <div class="download-card-footer">
+                            <a
+                                class="btn btn-secondary"
+                                href="https://github.com/USERNAME/REPO"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <span>View on GitHub</span>
+                            </a>
+                            <span class="pill">Open-ish</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ====== FOOTER ====== -->
+        <footer>
+            <p>
+                Minecraft.net (this one) is a fan‑made sideproject and is
+                <strong>not affiliated</strong> with Mojang or the official Minecraft game.
+            </p>
+            <p style="margin-top: 6px;">
+                Hosted on <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
