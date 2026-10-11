@@ -127,6 +127,11 @@
       <div class="dlrow">
         <div><h3>minecraft.nat (latest)</h3><p>Grab the newest build. Free, no sign-up.</p></div>
         <a class="btn" id="dl-main" href="#download">&#11015; Download</a>
+      </div>
+      <div class="dlrow">
+        <div><h3>Source code</h3><p>Browse the project on GitHub.</p></div>
+        <a class="btn alt" id="dl-src" href="#download">View Source</a>
+      </div>
     </div>
     <p class="note">Only download files from this page if you trust the person who made it. Run unknown programs with care.</p>
   </section>
@@ -143,11 +148,7 @@
   const GITHUB_URL   = "https://github.com/YOUR-USERNAME/YOUR-REPO";
   // ========================
 
-  const dl = document.getElementById('dl-main');
-  dl.href = DOWNLOAD_URL; dl.setAttribute('download','');
-  document.getElementById('dl-src').href = GITHUB_URL;
-
-  // simple hash router
+  // simple hash router (runs first so a later error can't blank the page)
   function route(){
     const p = (location.hash || '#home').slice(1);
     const id = ['home','about','download'].includes(p) ? p : 'home';
@@ -156,6 +157,12 @@
     scrollTo(0,0);
   }
   addEventListener('hashchange', route); route();
+
+  // wire up download links (guarded in case an element is missing)
+  const dl = document.getElementById('dl-main');
+  if (dl) { dl.href = DOWNLOAD_URL; dl.setAttribute('download',''); }
+  const src = document.getElementById('dl-src');
+  if (src) src.href = GITHUB_URL;
 
   // floating cube background
   const cv = document.getElementById('bg'), cx = cv.getContext('2d');
